@@ -1,6 +1,14 @@
 package gofunc
 
-// ToInterfaceSlice convert a slice to a slice of interface
+// ToInterfaceSlice converts a slice of any type to a slice of interface{}.
+// This is useful when you need to work with heterogeneous data or when
+// interfacing with APIs that expect []interface{}.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 3}
+//	interfaces := gofunc.ToInterfaceSlice(numbers)
+//	// interfaces is []interface{}{1, 2, 3}
 func ToInterfaceSlice[T any](slice []T) []interface{} {
 	result := make([]interface{}, len(slice))
 	for i := range slice {
@@ -9,7 +17,16 @@ func ToInterfaceSlice[T any](slice []T) []interface{} {
 	return result
 }
 
-// ToStringSlice convert a slice of str-approximate-type to a slice of string
+// ToStringSlice converts a slice of string-like types to a slice of string.
+// This is useful when working with custom string types that need to be
+// converted to standard strings.
+//
+// Example:
+//
+//	type UserID string
+//	ids := []UserID{"user1", "user2"}
+//	strings := gofunc.ToStringSlice(ids)
+//	// strings is []string{"user1", "user2"}
 func ToStringSlice[T ~string](slice []T) []string {
 	result := make([]string, len(slice))
 	for i := range slice {
@@ -18,7 +35,16 @@ func ToStringSlice[T ~string](slice []T) []string {
 	return result
 }
 
-// ToStringDerivedSlice convert a string slice to a slice of string-approximate-type
+// ToStringDerivedSlice converts a string slice to a slice of string-derived type.
+// This is the inverse of ToStringSlice, useful for converting standard strings
+// back to custom string types.
+//
+// Example:
+//
+//	type UserID string
+//	strings := []string{"user1", "user2"}
+//	ids := gofunc.ToStringDerivedSlice[UserID](strings)
+//	// ids is []UserID{"user1", "user2"}
 func ToStringDerivedSlice[U, T ~string](slice []T) []U {
 	result := make([]U, len(slice))
 	for i := range slice {
@@ -27,8 +53,15 @@ func ToStringDerivedSlice[U, T ~string](slice []T) []U {
 	return result
 }
 
-// ToNumberSlice convert a slice of number-approximate type to a slice of number
-// E.g. type OrderID uint, ToNumberSlice[uint]([]OrderID) -> []uint
+// ToNumberSlice converts a slice of number-like types to another numeric type.
+// This is useful when working with custom numeric types that need conversion.
+//
+// Example:
+//
+//	type OrderID uint
+//	orders := []OrderID{1, 2, 3}
+//	numbers := gofunc.ToNumberSlice[uint](orders)
+//	// numbers is []uint{1, 2, 3}
 func ToNumberSlice[U, T Number](slice []T) []U {
 	result := make([]U, len(slice))
 	for i := range slice {
@@ -37,7 +70,15 @@ func ToNumberSlice[U, T Number](slice []T) []U {
 	return result
 }
 
-// ToSet convert a slice to a set (no duplicated items)
+// ToSet removes duplicate elements from a slice, returning a new slice
+// with unique elements in their first occurrence order.
+// The input slice is not modified.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 2, 3, 1}
+//	unique := gofunc.ToSet(numbers)
+//	// unique is []int{1, 2, 3}
 func ToSet[T comparable](s []T) []T {
 	var (
 		length = len(s)
@@ -57,9 +98,16 @@ func ToSet[T comparable](s []T) []T {
 	return result
 }
 
-// ToSetPred convert a slice to a set with support key function
-// Unlike ToSet(), ToSetPred() can convert a slice of any type
-// ToSet() is the special case of ToSetPred() when keyFunc is 'func(t T) T { return t }'
+// ToSetPred removes duplicate elements from a slice using a key function
+// to determine uniqueness. Elements are considered equal if their keys are equal.
+// Returns a new slice with unique elements in their first occurrence order.
+//
+// Example:
+//
+//	type Person struct { Name string; Age int }
+//	people := []Person{{"Alice", 30}, {"Bob", 25}, {"Alice", 31}}
+//	unique := gofunc.ToSetPred(people, func(p Person) string { return p.Name })
+//	// unique contains only first Alice and Bob
 func ToSetPred[T any, K comparable](s []T, keyFunc func(t T) K) []T {
 	var (
 		length = len(s)
@@ -80,7 +128,14 @@ func ToSetPred[T any, K comparable](s []T, keyFunc func(t T) K) []T {
 	return result
 }
 
-// Contains test if a slice contains an item
+// Contains checks if a slice contains a specific item.
+// Returns true if the item is found, false otherwise.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 3, 4, 5}
+//	found := gofunc.Contains(numbers, 3)
+//	// found is true
 func Contains[T comparable](a []T, b T) bool {
 	for i := range a {
 		if a[i] == b {
@@ -90,7 +145,14 @@ func Contains[T comparable](a []T, b T) bool {
 	return false
 }
 
-// ContainsPred test if a slice contains an item by predicate
+// ContainsPred checks if a slice contains an item matching the given predicate.
+// Returns true if any element satisfies the predicate, false otherwise.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 3, 4, 5}
+//	hasEven := gofunc.ContainsPred(numbers, func(n int) bool { return n%2 == 0 })
+//	// hasEven is true
 func ContainsPred[T any](a []T, pred func(b T) bool) bool {
 	for i := range a {
 		if pred(a[i]) {
@@ -100,7 +162,14 @@ func ContainsPred[T any](a []T, pred func(b T) bool) bool {
 	return false
 }
 
-// FindPred find an item in slice by predicate
+// FindPred finds the first item in a slice that matches the given predicate.
+// Returns the found item and true, or zero value and false if not found.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 3, 4, 5}
+//	even, found := gofunc.FindPred(numbers, func(n int) bool { return n%2 == 0 })
+//	// even is 2, found is true
 func FindPred[T any](a []T, pred func(b T) bool) (T, bool) {
 	for i := range a {
 		if pred(a[i]) {
@@ -111,8 +180,14 @@ func FindPred[T any](a []T, pred func(b T) bool) (T, bool) {
 	return zeroT, false
 }
 
-// IndexOf get index of item in slice
-// Return -1 if not found
+// IndexOf returns the index of the first occurrence of an item in a slice.
+// Returns -1 if the item is not found.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 3, 2, 4}
+//	index := gofunc.IndexOf(numbers, 2)
+//	// index is 1 (first occurrence)
 func IndexOf[T comparable](a []T, t T) int {
 	for i := range a {
 		if a[i] == t {
@@ -122,8 +197,14 @@ func IndexOf[T comparable](a []T, t T) int {
 	return -1
 }
 
-// LastIndexOf get index of item from the end in slice
-// Return -1 if not found
+// LastIndexOf returns the index of the last occurrence of an item in a slice.
+// Returns -1 if the item is not found.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 3, 2, 4}
+//	index := gofunc.LastIndexOf(numbers, 2)
+//	// index is 3 (last occurrence)
 func LastIndexOf[T comparable](a []T, t T) int {
 	for i := len(a) - 1; i >= 0; i-- {
 		if a[i] == t {
@@ -133,8 +214,15 @@ func LastIndexOf[T comparable](a []T, t T) int {
 	return -1
 }
 
-// IndexOfSlice get index of sub-slice in slice
-// Return -1 if not found
+// IndexOfSlice returns the index of the first occurrence of a sub-slice within a slice.
+// Returns -1 if the sub-slice is not found or if sub-slice is empty.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 3, 4, 5}
+//	pattern := []int{3, 4}
+//	index := gofunc.IndexOfSlice(numbers, pattern)
+//	// index is 2
 func IndexOfSlice[T comparable](a []T, sub []T) int {
 	lengthA := len(a)
 	lengthSub := len(sub)
@@ -159,7 +247,15 @@ func IndexOfSlice[T comparable](a []T, sub []T) int {
 	return -1
 }
 
-// ChunkSlice split a slice into some slices by chunkSize
+// ChunkSlice splits a slice into smaller slices of specified size.
+// The last chunk may be smaller if the slice length is not evenly divisible.
+// Returns an empty slice if the input slice is empty.
+//
+// Example:
+//
+//	numbers := []int{1, 2, 3, 4, 5, 6, 7}
+//	chunks := gofunc.ChunkSlice(numbers, 3)
+//	// chunks is [][]int{{1, 2, 3}, {4, 5, 6}, {7}}
 func ChunkSlice[T any](slice []T, chunkSize int) [][]T {
 	total := len(slice)
 	if total == 0 {
@@ -187,7 +283,17 @@ func ChunkSlice[T any](slice []T, chunkSize int) [][]T {
 	return chunks
 }
 
-// ConcatSlices merge multiple slices into one
+// ConcatSlices concatenates multiple slices into a single slice.
+// The resulting slice contains all elements from the input slices in order.
+// Returns an empty slice if no slices are provided.
+//
+// Example:
+//
+//	slice1 := []int{1, 2}
+//	slice2 := []int{3, 4}
+//	slice3 := []int{5}
+//	result := gofunc.ConcatSlices(slice1, slice2, slice3)
+//	// result is []int{1, 2, 3, 4, 5}
 func ConcatSlices[T any](slices ...[]T) []T {
 	capacity := 0
 	for _, s := range slices {
