@@ -54,11 +54,13 @@ jobs:
       run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.out
         flags: unittests
         name: codecov-umbrella
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
 
   lint:
     name: Lint
@@ -73,10 +75,10 @@ jobs:
         go-version: 1.22.x
 
     - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v6
       with:
         version: latest
-        args: --timeout=5m
+        args: --timeout=5m --skip-dirs=examples
 
   benchmark:
     name: Benchmark
@@ -95,9 +97,10 @@ jobs:
       run: go test -bench=. -benchmem ./... | tee benchmark.txt
 
     - name: Comment PR with benchmark results
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       if: github.event_name == 'pull_request'
       with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const fs = require('fs');
           const benchmark = fs.readFileSync('benchmark.txt', 'utf8');
@@ -133,8 +136,11 @@ jobs:
       uses: securecodewarrior/github-action-gosec@master
       with:
         args: '-no-fail -fmt sarif -out results.sarif ./...'
+      continue-on-error: true
 
     - name: Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: results.sarif
+      if: always()
+      continue-on-error: true

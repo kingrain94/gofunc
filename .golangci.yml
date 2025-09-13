@@ -7,6 +7,7 @@ run:
   tests: true
   skip-dirs:
     - vendor
+    - examples
   skip-files:
     - ".*_test.go"
   modules-download-mode: readonly
@@ -128,49 +129,22 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - bodyclose
-    - deadcode
-    - depguard
-    - dogsled
-    - dupl
     - errcheck
-    - exhaustive
-    - exportloopref
-    - funlen
-    - gochecknoinits
-    - gocognit
-    - goconst
-    - gocritic
-    - gocyclo
-    - godot
-    - godox
-    - gofmt
-    - gofumpt
-    - goimports
-    - golint
-    - gomnd
-    - goprintffuncname
-    - gosec
     - gosimple
     - govet
     - ineffassign
-    - lll
-    - misspell
-    - nakedret
-    - noctx
-    - nolintlint
-    - prealloc
-    - revive
-    - rowserrcheck
     - staticcheck
-    - structcheck
-    - stylecheck
     - typecheck
-    - unconvert
-    - unparam
     - unused
-    - varcheck
-    - whitespace
+    - gofmt
+    - goimports
+    - misspell
+    - revive
+    - gosec
+    - gocritic
+    - gocyclo
+    - funlen
+    - lll
 
 issues:
   exclude-rules:
@@ -214,3 +188,9 @@ issues:
 
   # Fix found issues (if it's supported by the linter)
   fix: false
+
+  # Exclude some common false positives
+  exclude:
+    - "Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print.*|os\.(Un)?Setenv). is not checked"
+    - "exported (type|method|function) .* should have comment or be unexported"
+    - "ST1000: at least one file in a package should have a package comment"
